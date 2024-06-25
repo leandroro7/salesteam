@@ -1,0 +1,155 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Tabela de Pessoas
+model SalesPerson {
+  sales_person_id   BigInt  @id @default(autoincrement())
+  sales_person_type String
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  created_by        String?
+  updated_by        String?
+  active            Boolean
+  b_account_id      BigInt?
+  legalEntities     LegalEntity[]
+  individuals       Individual[]
+  documents         Document[]
+  addresses         Address[]
+  contacts          Contact[]
+  functions         SalesPersonFunction[]
+  relationships     HierarchicalRelationship[]
+  supervisorOf      HierarchicalRelationship[] @relation("SupervisorRelation")
+}
+
+// Tabela de Entidades Legais
+model LegalEntity {
+  legal_entity_id BigInt  @id @default(autoincrement())
+  sales_person_id BigInt
+  trade_name      String?
+  corporate_name  String?
+  opening_date    DateTime?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  created_by      String?
+  updated_by      String?
+  b_account_id    BigInt?
+  active            Boolean
+  sales_person      SalesPerson @relation(fields: [sales_person_id], references: [sales_person_id])
+}
+
+// Tabela de Indivíduos
+model Individual {
+  individual_id  BigInt  @id @default(autoincrement())
+  sales_person_id BigInt
+  full_name      String
+  pronoun        String?
+  social_name    String?
+  birth_date     DateTime?
+  gender         String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  created_by     String?
+  updated_by     String?
+  b_account_id   BigInt?
+  active            Boolean
+  sales_person      SalesPerson @relation(fields: [sales_person_id], references: [sales_person_id])
+}
+
+// Tabela de Documentos
+model Document {
+  document_id       BigInt  @id @default(autoincrement())  
+  sales_person_id   BigInt
+  document_number   String?
+  issue_date        DateTime?
+  expiration_date   DateTime?
+  issuing_authority String?
+  document_type     String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  created_by        String?
+  updated_by        String?
+  b_account_id      BigInt?
+  active            Boolean
+  sales_person      SalesPerson @relation(fields: [sales_person_id], references: [sales_person_id])
+}
+
+// Tabela de Endereços
+model Address {
+  address_id        BigInt  @id @default(autoincrement()) 
+  sales_person_id   BigInt
+  address_type      String?
+  number            Int?
+  postal_code       String?
+  complement        String?
+  street            String?
+  neighborhood      String?
+  city              String?
+  state             String?
+  country           String?
+  state_geocode     String?
+  city_geocode      String?
+  address_geocode   String?
+  latitude          String?
+  longitude         String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  created_by        String?
+  updated_by        String?
+  b_account_id      BigInt?
+  active            Boolean
+  sales_person      SalesPerson @relation(fields: [sales_person_id], references: [sales_person_id])
+}
+
+// Tabela de Contatos
+model Contact {
+  contact_id     BigInt  @id @default(autoincrement())
+  sales_person_id BigInt
+  contact_type   String?
+  contact_value  String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  created_by     String?
+  updated_by     String?
+  b_account_id   BigInt?
+  active            Boolean
+  sales_person      SalesPerson @relation(fields: [sales_person_id], references: [sales_person_id])
+}
+
+// Tabela de Funções
+model Function {
+  function_id  BigInt  @id @default(autoincrement())
+  description  String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  created_by   String?
+  updated_by   String?
+  b_account_id BigInt?
+  active       Boolean
+  salesPersonFunctions SalesPersonFunction[]
+}
+
+// Tabela de Associação de Pessoas e Funções
+model SalesPersonFunction {
+  sales_person_function_id BigInt  @id @default(autoincrement())
+  sales_person_id          BigInt
+  function                 Function @relation(fields: [function_id], references: [function_id])
+  function_id              BigInt
+  active            Boolean
+  sales_person   SalesPerson @relation(fields: [sales_person_id], references: [sales_person_id])
+}
+
+// Tabela de Relacionamento Hierárquico
+model HierarchicalRelationship {
+  relationship_id BigInt  @id @default(autoincrement())
+  sales_person_id BigInt
+  supervisor      SalesPerson @relation("SupervisorRelation", fields: [supervisor_id], references: [sales_person_id])
+  supervisor_id   BigInt
+  active            Boolean
+  sales_person      SalesPerson @relation(fields: [sales_person_id], references: [sales_person_id])
+}
